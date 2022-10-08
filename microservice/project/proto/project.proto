@@ -1,0 +1,446 @@
+syntax = "proto3";
+
+package project;
+
+option go_package="./;project";
+service ProjectService {
+  // 项目相关
+  rpc CreateProject(CreateProjectRequest) returns (IdResponse) {}
+  rpc GetProjectList(GetProjectListRequest) returns (ProjectListResponse) {}
+  rpc GetProjectInfo(GetRequest) returns (ProjectInfo) {}
+  rpc UpdateProjectInfo(UpdateProjectInfoRequest) returns (Response) {}
+  rpc DeleteProject(GetRequest) returns (Response) {}
+  rpc GetMembers(GetMemberListRequest) returns (MembersListResponse) {}
+  rpc UpdateMembers(UpdateMemberRequest) returns (Response) {}
+  rpc GetProjectIdsForUser(GetRequest) returns (ProjectIdsResponse) {}
+  rpc CheckProjectForUser(CheckProjectRequest) returns (CheckProjectResponse) {}
+  rpc GetFileOrDocName(GetFileOrDocNameRequest) returns (GetFileOrDocNameResponse) {}
+  rpc Search(SearchRequest) returns (SearchResponse) {}
+
+  // 回收站
+  rpc GetTrashbin(GetTrashbinRequest) returns (GetTrashbinResponse) {}
+  rpc UpdateTrashbin(RemoveTrashbinRequest) returns (Response) {}
+  rpc DeleteTrashbin(DeleteTrashbinRequest) returns (Response) {}
+
+  // 文件相关
+  rpc CreateFile(CreateFileRequest) returns (IdResponse) {}
+  rpc UpdateFile(UpdateFileRequest) returns (Response) {}
+  rpc DeleteFile(DeleteRequest) returns (Response) {}
+  rpc GetFileDetail(GetFileDetailRequest) returns (FileDetail) {}
+  rpc GetFileInfoList(GetInfoByIdsRequest) returns (GetFileInfoListResponse) {}
+
+  // 文档相关
+  rpc CreateDoc(CreateDocRequest) returns (IdResponse) {}
+  rpc UpdateDoc(UpdateDocRequest) returns (Response) {}
+  rpc DeleteDoc(DeleteRequest) returns (Response) {}
+  rpc GetDocInfoList(GetInfoByIdsRequest) returns (GetDocInfoListResponse) {}
+
+  // 评论相关
+  rpc CreateComment(CreateCommentRequest) returns (Response) {}
+  rpc UpdateComment(UpdateCommentRequest) returns (Response) {}
+  rpc DeleteComment(DeleteCommentRequest) returns (Response) {}
+  rpc GetCommentList(GetCommentRequest) returns (CommentListResponse) {}
+
+  // Folder crud
+  rpc CreateFolder(CreateFolderRequest) returns (IdResponse) {}
+  rpc GetFolderInfoList(GetInfoByIdsRequest) returns (GetFolderListResponse) {}
+  rpc UpdateFolder(UpdateFolderRequest) returns (Response) {}
+  rpc DeleteFolder(DeleteRequest) returns (Response) {}
+  rpc GetFolderChildren(GetRequest) returns (ChildrenList) {}
+
+
+  rpc UpdateFilePosition(UpdateFilePositionRequest) returns (Response){}
+}
+
+message CreateCommentRequest {
+  uint32 target_id = 1;
+  uint32 user_id = 2;
+  uint32 type_id = 3;
+  string content = 4;
+}
+
+message UpdateCommentRequest {
+  uint32 comment_id = 1;
+  uint32 user_id = 2;
+  uint32 type_id = 3;
+  string content = 4;
+}
+
+message CheckProjectRequest {
+  uint32 user_id = 1;
+  uint32 project_id = 2;
+}
+
+message CheckProjectResponse {
+  bool if_valid = 1;
+}
+
+// 移动文件请求
+message UpdateFilePositionRequest {
+  uint32 file_id = 1;
+  uint32 old_father_id = 2; // 旧父 id 判断是否被删
+  uint32 father_id = 3; // 新父 id
+  uint32 father_type = 4; // 根据 constvar 的 file code 确定
+  uint32 type = 5;
+  uint32 children_position_index = 6;
+  uint32 project_id = 7;
+}
+
+// 获取 文档/文件 详情请求
+message GetFileDetailRequest {
+  uint32 id = 1;
+  uint32 father_id = 2;
+  uint32 project_id = 3;
+  uint32 type_id = 4;
+}
+
+message DeleteRequest {
+  uint32 id = 1;
+  uint32 user_id = 2;
+  uint32 role = 3;
+  uint32 project_id = 4;
+  uint32 type_id = 5;
+}
+
+message GetTrashbinRequest {
+  uint32 offset = 1;
+  uint32 limit = 2;
+  uint32 project_id = 3;
+}
+
+message Trashbin {
+  uint32 id = 1;
+  uint32 type = 2; // 0-project 1-doc 2-file 3-doc folder 4-file folder
+  string name = 3;
+  string create_time = 4;
+  string delete_time = 5;
+}
+
+message GetTrashbinResponse {
+  repeated Trashbin list = 1;
+}
+
+message RemoveTrashbinRequest {
+  uint32 id = 1;
+  uint32 type = 2;
+  uint32 father_id = 3;
+  uint32 children_position_index = 4; // 还是需要用户给以个来恢复文件
+  bool is_father_project = 5; // 1->project 0->folder 还根据 type 来判定恢复在哪
+  uint32 project_id = 6;
+}
+
+message DeleteTrashbinRequest {
+  uint32 id = 1;
+  uint32 type = 2;
+  uint32 project_id = 3;
+}
+
+message UpdateFileRequest {
+  uint32 id = 1;
+  string name = 2;
+  string url = 3;
+  uint32 project_id = 4;
+}
+
+message CreateProjectRequest {
+  string name = 1;
+  string intro = 2;
+  uint32 team_id = 3;
+  uint32 creator_id = 4;
+}
+
+message UpdateFolderRequest {
+  uint32 folder_id = 1;
+  string name = 2; // 只提供改名字，移动通过 update children 实现
+  uint32 project_id = 3;
+  uint32 type_id = 4;
+}
+
+message CreateFolderRequest {
+  uint32 father_id = 1;
+  string name = 3;
+  uint32 project_id = 4;
+  uint32 creator_id = 5;
+  uint32 children_position_index = 6;
+  uint32 type_id = 7;
+}
+
+message DeleteCommentRequest {
+  uint32 comment_id = 1;
+  uint32 user_id = 2;
+  uint32 type_id = 3;
+}
+
+message Comment {
+  uint32 id = 1;
+  string content = 2;
+  uint32 kind = 3;
+  uint32 user_id = 4;
+  string time = 5;
+  string avatar = 6;
+  string user_name = 7;
+}
+
+message CommentListResponse {
+  repeated Comment list = 1;
+  uint32 count = 2;
+}
+
+message GetCommentRequest {
+  uint32 last_id = 1;
+  uint32 offset = 2;
+  uint32 limit = 3;
+  uint32 target_id = 4;
+  uint32 type_id = 5;
+}
+
+message IdResponse {
+  uint32 id = 1;
+}
+
+message ProjectIdsResponse {
+  repeated uint32 list = 1;
+}
+
+message GetProjectListRequest {
+  uint32 user_id = 1;
+  uint32 last_id = 2;
+  uint32 offset = 3;
+  uint32 limit = 4;
+  bool pagination = 5;
+}
+
+message GetMemberListRequest {
+  uint32 project_id = 1;
+  uint32 last_id = 2;
+  uint32 offset = 3;
+  uint32 limit = 4;
+  bool pagination = 5;
+}
+
+message ProjectListResponse {
+  repeated ProjectListItem list = 1;
+}
+
+message GetRequest {
+  uint32 id = 1;
+  uint32 project_id = 2;
+  uint32 type_id = 3;
+}
+
+message GetInfoRequest {
+  repeated uint32 ids = 1;
+}
+
+message RegisterRequest {
+  string email = 1;
+  string name = 2;
+}
+
+message LoginRequest {
+  string email = 1;
+  string auth_token = 2;
+}
+
+message UserInfo {
+  uint32 id = 1;
+  string nick = 2;
+  string name = 3;
+  string avatar_url = 4;
+}
+
+message UserInfoResponse {
+  repeated UserInfo list = 1;
+}
+
+message UserProfile {
+  uint32 id = 1;
+  string nick = 2;
+  string name = 3;
+  string avatar_url = 4;
+  string intro = 5;
+  string email = 6;
+}
+
+message Response {}
+
+message User {
+  uint32 id = 1;
+  string avatar = 2;
+}
+
+message ProjectListItem {
+  uint32 id = 1;
+  string name = 2;
+  string logo = 3;
+}
+
+
+message MembersListResponse {
+  repeated MembersListItem list = 1;
+  uint32 count = 2;
+}
+
+message MembersListItem {
+  uint32 id = 1;
+  string name = 2;
+  string avatar = 3;
+  string group_name = 4;
+  uint32 role = 5;
+}
+
+message UpdateMemberRequest {
+  uint32 id = 1;
+  repeated uint32 list = 2;
+}
+
+message ProjectInfo {
+  uint32 id = 1;
+  string name = 2;
+  string intro = 3;
+  uint32 user_count = 4;
+  string doc_children = 5;
+  string file_children = 6;
+  string time = 7;
+  string creator_name = 8;
+}
+
+message UpdateProjectInfoRequest {
+  uint32 id = 1;
+  string name = 2;
+  string intro = 3;
+}
+
+message Children {
+  uint32 id = 1;
+  string name = 2;
+  string creat_time = 3;
+  string path = 4;
+  bool type = 5;
+  string creator_name = 6;
+}
+
+message ChildrenList {
+  repeated Children list = 1;
+}
+
+message CreateFileRequest {
+  uint32 project_id = 1;
+  string name = 2;
+  uint32 children_position_index = 3;
+  string url = 4;
+  uint32 user_id = 5;
+  uint32 team_id = 6;
+  uint32 father_id = 7;
+}
+
+message CreateDocRequest {
+  string title = 1;
+  string content = 2;
+  uint32 project_id = 3;
+  uint32 user_id = 4;
+  uint32 team_id = 5;
+  uint32 father_id = 6;
+  uint32 children_position_index = 8;
+}
+
+message UpdateDocRequest {
+  uint32 id = 1;
+  string name = 2;
+  string content = 3;
+  uint32 editor_id = 4;
+  uint32 project_id = 5;
+}
+
+message GetInfoByIdsRequest {
+  repeated uint32 list = 1;
+  uint32 father_id = 2;
+  uint32 project_id = 3;
+  uint32 type_id = 4;
+}
+
+message FileDetail {
+  uint32 id = 1;
+  string name = 2;
+  string url = 3;
+  string creator = 4;
+  string create_time = 5;
+  string project_name = 6;
+  string editor = 7;
+  string content = 8;
+  string last_edit_time = 9;
+}
+
+message GetFileInfoListResponse {
+  repeated FileInfo list = 1;
+}
+
+message GetDocInfoListResponse {
+  repeated DocInfo list = 1;
+}
+
+message GetFolderListResponse {
+  repeated FolderInfo list = 1;
+}
+
+message FileInfo {
+  uint32 id = 1;
+  string title = 2;
+}
+
+message DocDetail {
+  uint32 id = 1;
+  string title = 2;
+  string content = 3;
+  string creator = 4;
+  string create_time = 5;
+  string last_editor = 6;
+  string last_edit_time = 7;
+  string project_name = 8;
+}
+
+message DocInfo {
+  uint32 id = 1;
+  string title = 2;
+}
+
+
+message FolderInfo {
+  uint32 id = 1;
+  string name = 2;
+}
+
+message GetFileOrDocNameRequest {
+  uint32 id = 1;
+  uint32 type = 2;
+}
+
+message GetFileOrDocNameResponse {
+  string name = 1;
+}
+
+message SearchRequest {
+  uint32 type = 1;
+  string keyword = 2;
+  uint32 user_id = 3;
+  uint32 project_id = 4;
+  bool pagination = 5;
+  uint32 offset = 6;
+  uint32 limit = 7;
+  uint32 last_id = 8;
+}
+
+message SearchResult {
+  uint32 id = 1;
+  string title = 2;
+  string content = 3;
+  string user_name = 4;
+  string project_name = 5;
+  string time = 6;
+  uint32 type = 7;
+}
+
+message SearchResponse {
+  repeated SearchResult list = 1;
+  uint32 count = 2;
+}

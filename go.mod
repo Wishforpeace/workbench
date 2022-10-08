@@ -18,7 +18,6 @@ require (
 )
 
 require (
-	github.com/HdrHistogram/hdrhistogram-go v1.1.2 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/uber/jaeger-lib v2.4.1+incompatible // indirect
+	github.com/micro/protobuf v0.0.0-20180321161605-ebd3be6d4fdb // indirect
 )
